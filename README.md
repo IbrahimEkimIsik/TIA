@@ -1,6 +1,6 @@
 # TIA — Threat Intelligence Assistant
 
-A natural language CLI for querying the [rosti.dev](https://rosti.dev) threat intelligence platform, powered by Claude AI. Ask anything about threat actors, malware families, or IOCs — and get structured results with report links and optional file exports.
+A natural language CLI and native Claude Code MCP integration for querying the [rosti.dev](https://rosti.dev) threat intelligence platform. Search reports, extract IOCs, and export data for any threat actor or malware family.
 
 ## Features
 
@@ -9,6 +9,7 @@ A natural language CLI for querying the [rosti.dev](https://rosti.dev) threat in
 - Extract IOCs from any report
 - Export IOCs to **Excel (.xlsx)**, **CSV**, or **JSON** on demand
 - Each Excel export creates one sheet per report, named after the report title
+- **Native Claude Code integration via MCP** — no terminal needed
 
 ## Requirements
 
@@ -33,13 +34,15 @@ A natural language CLI for querying the [rosti.dev](https://rosti.dev) threat in
    ```bash
    cp .env.example .env
    ```
-   Then fill in your API keys in `.env`:
+   Fill in your API keys in `.env`:
    ```
    ROSTI_API_KEY=your_rosti_api_key_here
    ANTHROPIC_API_KEY=your_anthropic_api_key_here
    ```
 
-## Usage
+---
+
+## Usage — CLI (Terminal)
 
 **Single query:**
 ```bash
@@ -60,6 +63,51 @@ python rosti.py "get Lazarus IOCs and save as JSON"
 python rosti.py "export Scattered Spider IOCs to CSV"
 ```
 
+---
+
+## Usage — Native Claude Code MCP Integration
+
+This lets you query Rosti threat intelligence **directly inside Claude Code** without opening a terminal.
+
+### 1. Register the MCP server
+
+Add this to your `~/.claude/settings.json`:
+
+```json
+{
+  "mcpServers": {
+    "rosti": {
+      "type": "stdio",
+      "command": "python",
+      "args": ["/absolute/path/to/rosti_mcp.py"],
+      "env": {
+        "ROSTI_API_KEY": "your_rosti_api_key_here",
+        "ANTHROPIC_API_KEY": "your_anthropic_api_key_here"
+      }
+    }
+  }
+}
+```
+
+> Replace `/absolute/path/to/rosti_mcp.py` with the full path to the file on your machine.
+
+### 2. Restart Claude Code
+
+The `rosti` MCP server will load automatically on next launch.
+
+### 3. Ask directly in the chat
+
+No commands needed — just talk to Claude:
+
+```
+find all DPRK reports from 2026
+show me Lazarus Group IOCs and export to Excel
+what are the latest Scattered Spider reports?
+search for reports about LummaC2
+```
+
+---
+
 ## Output Format
 
 Reports are always displayed as a table:
@@ -75,3 +123,12 @@ Reports are always displayed as a table:
 | Excel (.xlsx) | "export to Excel" / "save as xlsx" |
 | CSV | "export to CSV" |
 | JSON | "export to JSON" |
+
+## Files
+
+| File | Description |
+|------|-------------|
+| `rosti.py` | Standalone CLI script |
+| `rosti_mcp.py` | Native MCP server for Claude Code |
+| `requirements.txt` | Python dependencies |
+| `.env.example` | API key template |
